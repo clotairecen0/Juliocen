@@ -68,6 +68,17 @@ ARCHITECTURE struct OF FPmul_stage2 IS
    SIGNAL dout        : std_logic;
    SIGNAL dout1       : std_logic_vector(7 DOWNTO 0);
    SIGNAL prod        : std_logic_vector(63 DOWNTO 0);
+	
+		-- pipeline signals
+	SIGNAL stage2_SIGN_stage1 : std_logic;
+	signal stage2_EXP_pos_int : std_logic;
+   signal stage2_EXP_neg_int : std_logic;
+	signal stage2_EXP_in_int : std_logic_vector(7 DOWNTO 0);
+	SIGNAL stage2_SIG_in_int : std_logic_vector(27 DOWNTO 0);
+	SIGNAL stage2_isINF_stage1 : std_logic;
+   SIGNAL stage2_isNaN_stage1 : std_logic;
+   SIGNAL stage2_isZ_tab_stage1 : std_logic;
+  
 
 
 
@@ -87,10 +98,10 @@ BEGIN
    PROCESS(clk)
    BEGIN
       IF RISING_EDGE(clk) THEN
-         EXP_in <= EXP_in_int;
-         SIG_in <= SIG_in_int;
-         EXP_pos_stage2 <= EXP_pos_int;
-         EXP_neg_stage2 <= EXP_neg_int;
+         stage2_EXP_in_int <= EXP_in_int;
+         stage2_SIG_in_int <= SIG_in_int;
+         stage2_EXP_pos_int <= EXP_pos_int;
+         stage2_EXP_neg_int <= EXP_neg_int;
       END IF;
    END PROCESS;
 
@@ -99,12 +110,35 @@ BEGIN
    PROCESS(clk)
    BEGIN
       IF RISING_EDGE(clk) THEN
-         isINF_stage2 <= isINF_stage1;
-         isNaN_stage2 <= isNaN_stage1;
-         isZ_tab_stage2 <= isZ_tab_stage1;
-         SIGN_out_stage2 <= SIGN_out_stage1;
+         stage2_isINF_stage1 <= isINF_stage1;
+         stage2_isNaN_stage1 <= isNaN_stage1;
+         stage2_isZ_tab_stage1 <= isZ_tab_stage1;
+         stage2_SIGN_stage1 <= SIGN_out_stage1;
       END IF;
    END PROCESS;
+	
+	   PROCESS(clk)
+   BEGIN
+      IF RISING_EDGE(clk) THEN
+         EXP_in <= stage2_EXP_in_int;
+         SIG_in <= stage2_SIG_in_int;
+         EXP_pos_stage2 <= stage2_EXP_pos_int;
+         EXP_neg_stage2 <= stage2_EXP_neg_int;
+      END IF;
+   END PROCESS;
+
+   -- HDL Embedded Text Block 4 latch2
+   -- latch2 4
+   PROCESS(clk)
+   BEGIN
+      IF RISING_EDGE(clk) THEN
+         isINF_stage2 <= stage2_isINF_stage1;
+         isNaN_stage2 <= stage2_isNaN_stage1;
+         isZ_tab_stage2 <= stage2_isZ_tab_stage1;
+         SIGN_out_stage2 <= stage2_SIGN_stage1;
+      END IF;
+   END PROCESS;
+	
 
    -- HDL Embedded Text Block 5 eb1
    -- exp_pos 5
@@ -141,3 +175,4 @@ BEGIN
    -- Instance port mappings.
 
 END struct;
+
